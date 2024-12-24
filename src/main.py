@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_cache.backends.redis import RedisBackend
 from fastapi_cache import FastAPICache
 from fastapi_cache.coder import PickleCoder
+from api.v1.main_app.router import router
 
 
 
@@ -27,6 +28,8 @@ app = FastAPI(
     title='Travelia',
     lifespan=lifespan
 )
+
+app.include_router(router=router)
 
 # templates = Jinja2Templates(directory='templates')
 # app.mount('/static', StaticFiles(directory='static'), name='static')

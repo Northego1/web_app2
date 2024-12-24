@@ -4,6 +4,15 @@ from typing import Self
 from dotenv import load_dotenv
 
 
+class Gateway:
+    def __init__(self: Self):
+        pass
+
+
+    def nominatim_request_url(self: Self, address: str) -> str:
+        return f'https://nominatim.openstreetmap.org/search?q={address}&format=json'
+
+
 class Db:
     def __init__(self: Self):
         self.DB_HOST = os.getenv('DB_HOST')
@@ -59,6 +68,7 @@ class Settings:
         self.db = Db()
         self.redis = Redis()
         self.valhalla = Valhalla()
+        self.gateway = Gateway()
 
 
 

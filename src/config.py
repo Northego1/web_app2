@@ -6,12 +6,18 @@ from dotenv import load_dotenv
 
 class Gateway:
     def __init__(self: Self):
-        pass
+        self.VALHALLA_HOST = os.getenv('VALHALLA_HOST')
+        self.VALHALLA_PORT = os.getenv('VALHALLA_PORT')
 
 
     def nominatim_request_url(self: Self, address: str) -> str:
         return f'https://nominatim.openstreetmap.org/search?q={address}&format=json'
 
+    @property
+    def valhalla_request_url(self: Self):
+        return (
+            f"http://{self.VALHALLA_HOST}:{self.VALHALLA_PORT}/route"
+        )
 
 class Db:
     def __init__(self: Self):

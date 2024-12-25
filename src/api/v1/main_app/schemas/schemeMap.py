@@ -9,23 +9,33 @@ class PointType(str, Enum):
     INITIAL = 'initial'
 
 
+class Transport_type(str, Enum):
+    auto = 'auto'
+    bicycle = 'bicycle'
+    pedestrian = 'pedestrian'
+
+
+
+
 class Point(BaseModel):
     coord: tuple[float, float]
     index: int
     type: PointType
 
 
-    
-
 class Coords(BaseModel):
     coords: Optional[list[Point]] = []
 
 
+class Route(BaseModel):
+    coords: Coords
+    transport_type: Transport_type
+    polylines: list[list[tuple[float, float]]]
+    legs: list[dict]
+    summary_time: float   # seconds
+    distance: float     # metres
 
-class Transport_type(str, Enum):
-    auto = 'auto'
-    bicycle = 'bicycle'
-    pedestrian = 'pedestrian'
+
 
 
 class MapRequestSchema(BaseModel):

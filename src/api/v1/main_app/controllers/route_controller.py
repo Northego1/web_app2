@@ -43,7 +43,14 @@ class RouteControllerImpl:
                     transport_type=request_schema.transport_type,
                 )
             if request_schema.rests:
-                pass
+                refreshed_coords = await self.RestAdderService.add_rest_place_to_coords(
+                    route=route
+                )
+                refreshed_route = await self.RoutesMakerService.create_route(
+                    coords=coords,
+                    transport_type=request_schema.transport_type
+                )
+
         except Exception as e:
             raise e
             

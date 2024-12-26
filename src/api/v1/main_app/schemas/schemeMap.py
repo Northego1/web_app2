@@ -36,6 +36,24 @@ class Route(BaseModel):
     distance: float     # metres
 
 
+class PlaceAddress(BaseModel):
+    city: str | None
+    street: str | None
+    house_num: str | None
+
+
+class RestPlaceInfo(BaseModel):
+    type: str | None
+    name: str
+    address: PlaceAddress
+    phone: str | None
+    reservation: str | None
+
+
+class RestPlace(BaseModel):
+    point: Point
+    place: RestPlaceInfo
+
 
 
 class MapRequestSchema(BaseModel):

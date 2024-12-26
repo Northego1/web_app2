@@ -8,7 +8,8 @@ class Gateway:
     def __init__(self: Self):
         self.VALHALLA_HOST = os.getenv('VALHALLA_HOST')
         self.VALHALLA_PORT = os.getenv('VALHALLA_PORT')
-
+        self.overpass_request_url = "http://overpass-api.de/api/interpreter"
+        
 
     def nominatim_request_url(self: Self, address: str) -> str:
         return f'https://nominatim.openstreetmap.org/search?q={address}&format=json'
@@ -18,6 +19,8 @@ class Gateway:
         return (
             f"http://{self.VALHALLA_HOST}:{self.VALHALLA_PORT}/route"
         )
+     
+  
 
 class Db:
     def __init__(self: Self):
@@ -49,17 +52,7 @@ class Redis:
         )
 
 
-class Valhalla:
-    def __init__(self: Self):
-        self.VALHALLA_HOST = os.getenv('VALHALLA_HOST')
-        self.VALHALLA_PORT = os.getenv('VALHALLA_PORT')
 
-    @property
-    def valhalla_URL(self) -> str:
-        return (
-            f"http://{self.VALHALLA_HOST}:{self.VALHALLA_PORT}/route"
-        )
-    
 
 class Settings:
     def __init__(self: Self, env_file: str):
@@ -73,7 +66,6 @@ class Settings:
 
         self.db = Db()
         self.redis = Redis()
-        self.valhalla = Valhalla()
         self.gateway = Gateway()
 
 

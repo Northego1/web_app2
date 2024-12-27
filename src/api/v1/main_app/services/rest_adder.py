@@ -4,14 +4,15 @@ from typing import Annotated, Protocol, Self
 
 import aiohttp
 from fastapi import Depends, HTTPException
-from api.v1.main_app.schemas.schemeMap import Coords, PlaceAddress, Point, PointType, RestPlace, RestPlaceInfo, Route
+from api.v1.main_app.schemas.schemeMap import Points, PlaceAddress, Point, PointType, RestPlace, RestPlaceInfo, Route
+from exception import ServerError
 from logger import get_logger
 import numpy as np
 from api.v1.main_app.gateway.overpass_api import (
     OverpassApiGateway,
     OverpassApiGatewayProtocol
 )
-
+from config import settings
 
 
 logger = get_logger(__name__)
@@ -21,9 +22,7 @@ class RestAdderServiceProtocol(Protocol):
     async def add_rest_place_to_coords(
             self: Self,
             route: Route,
-            *,
-            non_stop_drive_limit: int = 7,
-    ) -> Coords:
+    ) -> Points:
         pass
 
 
@@ -38,24 +37,25 @@ class RestAdderServiceImpl:
         self.rest_times: int = 0
 
 
-
     def _search_rest_coords(
             self: Self,
             route: Route,
-            non_stop_drive_limit: int,
             summary_travel_time: float
     ) -> dict[int, list[list]]:
-        self.rest_times = int(summary_travel_time // non_stop_drive_limit)
+        if summary_travel_time < settings.setup.non_stop_drive_limit:
+            raise ServerError()
+        self.rest_times = int(summary_travel_time // settings.setup.non_stop_drive_limit)
         nonstop_driving = route.summary_time / (self.rest_times) 
         time_to_next_stop = stops_found = 0  
         logger.debug(f'Количество заданых остановок: {self.rest_times}')
+
         indexed_rest_coords = {key: list() for key, _ in enumerate(route.legs)}
         for index, leg in enumerate(route.legs):
             if stops_found == self.rest_times:
                 return indexed_rest_coords
             for maneuver in leg["maneuvers"]:
                 time_to_next_stop += maneuver["time"]
-                if time_to_next_stop > non_stop_drive_limit:
+                if time_to_next_stop > settings.setup.non_stop_drive_limit:
                     time_to_next_stop += maneuver["time"]
                     time_by_order_percents = (
                         (nonstop_driving - time_to_next_stop) / maneuver['time']
@@ -80,12 +80,9 @@ class RestAdderServiceImpl:
     async def add_rest_place_to_coords(
             self: Self,
             route: Route,
-            *,
-            non_stop_drive_limit: int = 25200,
-    ) -> Coords:
+    ) -> Points:
         rest_coords = self._search_rest_coords(
             route=route,
-            non_stop_drive_limit=non_stop_drive_limit,
             summary_travel_time=route.summary_time
         )
         places = await self.OverpassApiGateway.overpass_request(
@@ -93,12 +90,17 @@ class RestAdderServiceImpl:
             rest_times=self.rest_times,
         )
         new_coords = []
-        for point in route.coords.coords:
+        seq = 0
+        for point in sorted(route.points.points, key=lambda x: x.index):
+            point.index = seq
             new_coords.append(point)
+            seq += 1
             for place in places:
                 if place.point.index == point.index:
-                    new_coords.append(place.point)               
-        return Coords(coords=new_coords)
+                    place.point.index = seq
+                    new_coords.append(place.point)
+                    seq += 1        
+        return Points(points=new_coords)
 
 
 

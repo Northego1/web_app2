@@ -6,7 +6,7 @@ from api.v1.main_app.gateway.valhalla_api import (
     ValhallaGateway,
     ValhallaApiGatewayProtocol
 )
-from api.v1.main_app.schemas.schemeMap import Coords, Route, Transport_type
+from api.v1.main_app.schemas.schemeMap import Points, Route, Transport_type
 from logger import get_logger
 
 
@@ -18,7 +18,7 @@ logger = get_logger(__name__)
 class RoutesMakerServiceProtocol(Protocol):
     async def create_route(
             self: Self,
-            coords: Coords,
+            coords: Points,
             transport_type: Transport_type,
 
     ) -> Route:
@@ -35,7 +35,7 @@ class RoutesMakerServiceImpl:
 
     async def create_route(
             self: Self,
-            coords: Coords,
+            coords: Points,
             transport_type: Transport_type,
     ) -> Route:
         valhalla_response = await self.ValhallaGateway.valhalla_request(
@@ -52,7 +52,7 @@ class RoutesMakerServiceImpl:
             polylines.append(self.route_locations)
         
         route = Route(
-            coords=coords,
+            points=coords,
             transport_type=transport_type,
             polylines=polylines,
             legs=valhalla_response['trip']['legs'],

@@ -1,4 +1,14 @@
+from typing import Self
 from fastapi import HTTPException
+
+class ServerError(HTTPException):
+    def __init__(
+            self: Self,
+            status_code:int = 500,
+            detail = "unknown error",
+            headers = None
+    ):
+        super().__init__(status_code, detail, headers)
 
 
 class MapError(HTTPException):

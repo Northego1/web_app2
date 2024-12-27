@@ -1,7 +1,7 @@
 from typing import Annotated, Protocol, Self
 from fastapi import Depends
 
-from api.v1.main_app.schemas.schemeMap import Coords, MapRequestSchema
+from api.v1.main_app.schemas.schemeMap import Points, MapRequestSchema
 from api.v1.main_app.gateway.nominatim_api import (
     NominatimApiGateway,
     NominatimApiGatewayProtocol
@@ -12,7 +12,7 @@ logger = get_logger(__name__)
 
 
 class CoordsByAddressServiceProtocol(Protocol):
-    async def get_coords_by_address(self: Self, request_schema: MapRequestSchema) -> Coords:
+    async def get_coords_by_address(self: Self, request_schema: MapRequestSchema) -> Points:
         pass
 
 
@@ -24,7 +24,7 @@ class CoordsByAddressServiceImpl:
         self.NominatimApiGateway = NominatimApiGateway
 
 
-    async def get_coords_by_address(self: Self, request_schema: MapRequestSchema) -> Coords:
+    async def get_coords_by_address(self: Self, request_schema: MapRequestSchema) -> Points:
         logger.debug('Обращаяемся к nominatim_gateway')
         nominatim_response = await self.NominatimApiGateway.nominatim_request(
             addresses=request_schema.addresses

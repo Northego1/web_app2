@@ -86,7 +86,7 @@ class OverpassApiGatewayImpl:
                         continue
                     logger.debug(f'Найден отель по координатам {place.point.coord}') 
                     return place
-            logger.debug(f'Данные для радиуса {radius} не найдены')
+            logger.debug(f'Данные не найдены')
             return None       
 
 

@@ -23,12 +23,12 @@ class Point(BaseModel):
     type: PointType
 
 
-class Coords(BaseModel):
-    coords: Optional[list[Point]] = []
+class Points(BaseModel):
+    points: Optional[list[Point]] = []
 
 
 class Route(BaseModel):
-    coords: Coords
+    points: Points
     transport_type: Transport_type
     polylines: list[list[tuple[float, float]]]
     legs: list[dict]

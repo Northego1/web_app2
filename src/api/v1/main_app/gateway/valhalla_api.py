@@ -3,7 +3,7 @@ from typing import Annotated, Protocol, Self
 import aiohttp
 from fastapi import Depends
 from openrouteservice import convert
-from api.v1.main_app.schemas.schemeMap import Coords, Route, Transport_type
+from api.v1.main_app.schemas.schemeMap import Points, Route, Transport_type
 from exception import ValhallaError
 from logger import get_logger
 from config import settings
@@ -15,7 +15,7 @@ logger = get_logger(__name__)
 class ValhallaApiGatewayProtocol(Protocol):
     async def valhalla_request(
             self: Self,
-            coords: Coords,
+            coords: Points,
             transport_type: Transport_type = Transport_type.auto,
             *,
             units: str = "kilometres",
@@ -46,7 +46,7 @@ class ValhallaApiGatewayImpl:
 
     async def valhalla_request(
             self: Self,
-            coords: Coords,
+            coords: Points,
             transport_type: Transport_type = Transport_type.auto,
             *,
             units: str = "kilometres",
@@ -54,7 +54,7 @@ class ValhallaApiGatewayImpl:
             directions_type: str = "maneuvers"
     ):
         json_request = {
-            "locations": [0] * len(coords.coords),
+            "locations": [0] * len(coords.points),
             "costing": transport_type,
             "directions_options": {
                 "units": units,
@@ -62,7 +62,7 @@ class ValhallaApiGatewayImpl:
                 "directions_type": directions_type
             }
         }
-        for point in coords.coords:
+        for point in coords.points:
             json_request["locations"][point.index] = {
                 "lat": point.coord[0],
                 "lon": point.coord[1],

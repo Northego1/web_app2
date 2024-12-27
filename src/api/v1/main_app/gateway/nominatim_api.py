@@ -2,7 +2,7 @@ import asyncio
 from typing import Annotated, Protocol, Self
 import aiohttp
 from fastapi import Depends
-from api.v1.main_app.schemas.schemeMap import Coords, Point, PointType
+from api.v1.main_app.schemas.schemeMap import Points, Point, PointType
 from config import settings
 
 from exception import AddressError
@@ -14,13 +14,13 @@ logger = get_logger(__name__)
 
 
 class NominatimApiGatewayProtocol(Protocol):
-    async def nominatim_request(self: Self, **addresses: str) -> Coords:
+    async def nominatim_request(self: Self, **addresses: str) -> Points:
         pass
 
 
 class NominatimApiGatewayImpl:
     def __init__(self: Self):
-        self.return_coords = Coords()
+        self.return_coords = Points()
 
 
     async def _request(self: Self, address: str, index: int):
@@ -36,7 +36,7 @@ class NominatimApiGatewayImpl:
                         index=index,
                         type=PointType.INITIAL,
                     )
-                    self.return_coords.coords.append(point)
+                    self.return_coords.points.append(point)
                 else:
                     logger.error(f'API nominatim - нет данных по {address!r}')
                     raise AddressError(detail=f'Address {address!r} not found')
@@ -49,7 +49,7 @@ class NominatimApiGatewayImpl:
                 )
 
     
-    async def nominatim_request(self: Self, addresses: list[str]) -> Coords:
+    async def nominatim_request(self: Self, addresses: list[str]) -> Points:
         async with aiohttp.ClientSession() as self.session:
             logger.debug('Формируем "task_list" для отправки сообщений в "nominatim_api"')
             tasks = [

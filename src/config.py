@@ -52,6 +52,10 @@ class Redis:
         )
 
 
+class SetupSettings:
+    def __init__(self: Self):
+        self.non_stop_drive_limit = 25200
+        
 
 
 class Settings:
@@ -68,6 +72,7 @@ class Settings:
         self.redis = Redis()
         self.gateway = Gateway()
 
+        self.setup = SetupSettings()
 
 
 

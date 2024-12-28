@@ -51,8 +51,6 @@ class RestAdderServiceImpl:
 
         indexed_rest_coords = {key: list() for key, _ in enumerate(route.legs)}
         for index, leg in enumerate(route.legs):
-            if stops_found == self.rest_times:
-                return indexed_rest_coords
             for maneuver in leg["maneuvers"]:
                 time_to_next_stop += maneuver["time"]
                 if time_to_next_stop > settings.setup.non_stop_drive_limit:
@@ -71,10 +69,10 @@ class RestAdderServiceImpl:
                     )
                     indexed_rest_coords[index].append(interpolated_coords.tolist())
                     stops_found += 1
-                    # Пересчёт оставшегося времени после остановки
+                    if stops_found == self.rest_times:
+                        return indexed_rest_coords
                     time_to_next_stop = maneuver['time'] * (1 - time_by_order_percents)
 
-    
 
 
     async def add_rest_place_to_coords(
@@ -92,14 +90,16 @@ class RestAdderServiceImpl:
         new_coords = []
         seq = 0
         for point in sorted(route.points.points, key=lambda x: x.index):
+            index = point.index
             point.index = seq
             new_coords.append(point)
             seq += 1
             for place in places:
-                if place.point.index == point.index:
+                if place.point.index == index:
                     place.point.index = seq
                     new_coords.append(place.point)
-                    seq += 1        
+                    places.remove(place)
+                    seq += 1
         return Points(points=new_coords)
 
 

@@ -98,22 +98,32 @@ class OverpassApiGatewayImpl:
             radius_increment: int = 2000,
     ) -> list[RestPlace]:
         async with aiohttp.ClientSession() as self.session:
-            while rest_times or radius_increment > 30000:
+            crds = list((
+                (key, tuple(coords)) for key, value in rest_coords.items() 
+                    if rest_coords[key]
+                        for coords in value
+            ))
+            while radius_increment > 30000 or rest_times:
                 tasks = []
-                logger.debug(f'Поиск места отдыха в радиусе: {radius_increment}')
-                for key in rest_coords.keys():
-                    if rest_coords[key]:
-                        for coord in rest_coords[key]:
-                            tasks.append(asyncio.create_task(self._find_hotel_by_coords(key, coord, radius_increment)))
-                        options: list[Optional[RestPlace]] = await asyncio.gather(*tasks)
-                        for res in options: 
-                            if res:
-                                logger.debug(f'Найден отель по координатам: \n{res.point.coord}')
-                                rest_times -= 1
-                                self.rest_places.append(res)
-                                break
-                            else:
-                                radius_increment += 2000  
+                for pair in crds:
+                    tasks.append(   
+                        asyncio.create_task(
+                            self._find_hotel_by_coords(
+                                pair[0], pair[1], radius_increment
+                            )
+                        )
+                    )
+                options: list[Optional[RestPlace]] = await asyncio.gather(*tasks)
+                for res in options: 
+                    if res:
+                        logger.debug(f'Найден отель по координатам: \n{res.point.coord}')
+                        rest_times -= 1
+                        to_remove = next((x for x in crds if x[0] == res.point.index), None)
+                        if to_remove:
+                            crds.remove(to_remove)
+                        self.rest_places.append(res)
+                else:
+                    radius_increment += 2000  
             return self.rest_places                  
 
 

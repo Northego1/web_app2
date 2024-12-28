@@ -53,9 +53,8 @@ class NominatimApiGatewayImpl:
         async with aiohttp.ClientSession() as self.session:
             logger.debug('Формируем "task_list" для отправки сообщений в "nominatim_api"')
             tasks = [
-                asyncio.create_task(
-                    self._request(address, index) 
-                ) for index, address in enumerate(addresses)
+                asyncio.create_task(self._request(index=index, address=address))
+                for index, address in enumerate(addresses)
             ]
             await asyncio.gather(*tasks)
             logger.debug('Получены координаты от nominatim_api')

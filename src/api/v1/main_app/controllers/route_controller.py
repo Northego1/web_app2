@@ -24,7 +24,7 @@ from api.v1.main_app.services.map_render import (
 
 
 class RouteControllerProtocol(Protocol):
-    async def get_route(self: Self):
+    async def get_route(self: Self, request_schema: MapRequestSchema) -> str:
         pass
 
 
@@ -43,7 +43,7 @@ class RouteControllerImpl:
         self.MapRenderService = MapRenderService
         
 
-    async def get_route(self: Self, request_schema: MapRequestSchema):
+    async def get_route(self: Self, request_schema: MapRequestSchema) -> str:
         try:
             coords = await self.CoordsByAddressService.get_coords_by_address(
                 request_schema
@@ -60,7 +60,7 @@ class RouteControllerImpl:
                     coords=refreshed_coords,
                     transport_type=request_schema.transport_type
                 )
-            map_html: str = self.MapRenderService.render_by_polyline(
+            map_html = self.MapRenderService.render_by_polyline(
                 route=route
             )
 
@@ -72,9 +72,6 @@ class RouteControllerImpl:
             raise e
             
             
-
-
-
 
 async def get_route_controller(
         CoordsByAddressService: CoordsByAddressService,
